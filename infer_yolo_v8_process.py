@@ -18,7 +18,6 @@
 
 import copy
 from ikomia import core, dataprocess, utils
-import ultralytics
 from ultralytics import YOLO
 import torch
 
@@ -37,6 +36,7 @@ class InferYoloV8Param(core.CWorkflowTaskParam):
         self.conf_thres = 0.25
         self.iou_thres = 0.7
         self.update = False
+        self.model_weight_file = ""
 
     def set_values(self, param_map):
         # Set parameters values from Ikomia application
@@ -45,6 +45,7 @@ class InferYoloV8Param(core.CWorkflowTaskParam):
         self.input_size = int(param_map["input_size"])
         self.conf_thres = float(param_map["conf_thres"])
         self.iou_thres = float(param_map["iou_thres"])
+        self.model_weight_file = str(param_map["model_weight_file"])
         self.update = True
 
     def get_values(self):
@@ -57,7 +58,7 @@ class InferYoloV8Param(core.CWorkflowTaskParam):
         param_map["conf_thres"] = str(self.conf_thres)
         param_map["iou_thres"] = str(self.iou_thres)
         param_map["update"] = str(self.update)
-
+        param_map["model_weight_file"] = str(self.model_weight_file)
         return param_map
 
 
@@ -103,8 +104,11 @@ class InferYoloV8(dataprocess.CObjectDetectionTask):
         if param.update or self.model is None:
             self.device = 1 if param.cuda else torch.device("cpu")
             self.half = True if param.cuda else False
-            self.model_name = param.model_name + ".pt"
-            self.model = YOLO(self.model_name)
+
+            if param.model_weight_file:
+                self.model = YOLO(param.model_weight_file)
+            else:
+                self.model = YOLO(f'{param.model_name}.pt')
 
         # Run detection
         results = self.model.predict(
@@ -131,8 +135,15 @@ class InferYoloV8(dataprocess.CObjectDetectionTask):
                 x1, y1, x2, y2 = box[0], box[1], box[2], box[3]
                 widht = x2 - x1
                 height = y2 - y1
-                self.add_object(i, int(cls), float(
-                    conf), float(x1), float(y1), float(widht), float(height))
+                self.add_object(
+                        i,
+                        int(cls),
+                        float(conf),
+                        float(x1),
+                        float(y1),
+                        float(widht),
+                        float(height)
+                )
 
         # Step progress bar (Ikomia Studio):
         self.emit_step_progress()
@@ -155,7 +166,7 @@ class InferYoloV8Factory(dataprocess.CTaskFactory):
         self.info.description = "This algorithm proposes inference for object detection " \
                                 "with YOLOv8 models"
         # relative path -> as displayed in Ikomia application process tree
-        self.info.path = "Detection/Plugins/Python"
+        self.info.path = "Plugins/Python/Detection"
         self.info.version = "1.0.0"
         self.info.icon_path = "icons/icon.png"
         self.info.authors = "Jocher, G., Chaurasia, A., & Qiu, J"
