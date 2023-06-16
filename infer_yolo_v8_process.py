@@ -126,24 +126,24 @@ class InferYoloV8(dataprocess.CObjectDetectionTask):
         self.set_names(self.classes)
 
         # Get output
-        for image_prediction in results:
-            boxes = image_prediction.boxes.xyxy
-            confidences = image_prediction.boxes.conf
-            class_idx = image_prediction.boxes.cls
-            for i, (box, conf, cls) in enumerate(zip(boxes, confidences, class_idx)):
-                box = box.detach().cpu().numpy()
-                x1, y1, x2, y2 = box[0], box[1], box[2], box[3]
-                widht = x2 - x1
-                height = y2 - y1
-                self.add_object(
-                        i,
-                        int(cls),
-                        float(conf),
-                        float(x1),
-                        float(y1),
-                        float(widht),
-                        float(height)
-                )
+        boxes = results[0].boxes.xyxy
+        confidences = results[0].boxes.conf
+        class_idx = results[0].boxes.cls
+ 
+        for i, (box, conf, cls) in enumerate(zip(boxes, confidences, class_idx)):
+            box = box.detach().cpu().numpy()
+            x1, y1, x2, y2 = box[0], box[1], box[2], box[3]
+            widht = x2 - x1
+            height = y2 - y1
+            self.add_object(
+                    i,
+                    int(cls),
+                    float(conf),
+                    float(x1),
+                    float(y1),
+                    float(widht),
+                    float(height)
+            )
 
         # Step progress bar (Ikomia Studio):
         self.emit_step_progress()
