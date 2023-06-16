@@ -109,6 +109,7 @@ class InferYoloV8(dataprocess.CObjectDetectionTask):
                 self.model = YOLO(param.model_weight_file)
             else:
                 self.model = YOLO(f'{param.model_name}.pt')
+            param.update = False
 
         # Run detection
         results = self.model.predict(
