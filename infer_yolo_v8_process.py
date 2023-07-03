@@ -91,11 +91,16 @@ class InferYoloV8(dataprocess.CObjectDetectionTask):
         # Core function of your process
         # Call begin_task_run() for initialization
         self.begin_task_run()
+
+       # Clean detection outputs
+        self.get_output(1).clear_data()
+
         # Get parameters :
         param = self.get_param_object()
 
         # Get input :
         input = self.get_input(0)
+
 
         # Get image from input/output (numpy array):
         src_image = input.get_image()
