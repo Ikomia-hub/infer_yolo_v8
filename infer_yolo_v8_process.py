@@ -107,7 +107,7 @@ class InferYoloV8(dataprocess.CObjectDetectionTask):
 
         # Load model
         if param.update or self.model is None:
-            self.device = 1 if param.cuda else torch.device("cpu")
+            self.device = torch.device("cuda") if param.cuda else torch.device("cpu")
             self.half = True if param.cuda else False
 
             if param.model_weight_file:
