@@ -81,7 +81,6 @@ class InferYoloV8(dataprocess.CObjectDetectionTask):
 
         self.repo = 'ultralytics/assets'
         self.version = 'v0.0.0'
-        self.url = None
         self.device = torch.device("cpu")
         self.classes = None
         self.model = None
@@ -126,8 +125,8 @@ class InferYoloV8(dataprocess.CObjectDetectionTask):
                     str(model_folder), f'{param.model_name}.pt')
                 # Download model if not exist
                 if not os.path.isfile(model_weights):
-                    self.url = f'https://github.com/{self.repo}/releases/download/{self.version}/{param.model_name}.pt'
-                    download(url=self.url, dir=model_folder, unzip=True)
+                    url = f'https://github.com/{self.repo}/releases/download/{self.version}/{param.model_name}.pt'
+                    download(url=url, dir=model_folder, unzip=True)
                 self.model = YOLO(model_weights)
             param.update = False
 
