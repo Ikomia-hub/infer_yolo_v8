@@ -20,12 +20,15 @@ import copy
 from ikomia import core, dataprocess, utils
 from ultralytics import YOLO
 import torch
-
+import os
+from ultralytics import download
 
 # --------------------
 # - Class to handle the process parameters
 # - Inherits PyCore.CWorkflowTaskParam from Ikomia API
 # --------------------
+
+
 class InferYoloV8Param(core.CWorkflowTaskParam):
 
     def __init__(self):
@@ -76,6 +79,9 @@ class InferYoloV8(dataprocess.CObjectDetectionTask):
         else:
             self.set_param_object(copy.deepcopy(param))
 
+        self.repo = 'ultralytics/assets'
+        self.version = 'v0.0.0'
+        self.url = None
         self.device = torch.device("cpu")
         self.classes = None
         self.model = None
@@ -92,7 +98,7 @@ class InferYoloV8(dataprocess.CObjectDetectionTask):
         # Call begin_task_run() for initialization
         self.begin_task_run()
 
-       # Clean detection outputs
+       # Clean detection output
         self.get_output(1).clear_data()
 
         # Get parameters :
@@ -101,19 +107,28 @@ class InferYoloV8(dataprocess.CObjectDetectionTask):
         # Get input :
         input = self.get_input(0)
 
-
         # Get image from input/output (numpy array):
         src_image = input.get_image()
 
         # Load model
         if param.update or self.model is None:
-            self.device = torch.device("cuda") if param.cuda else torch.device("cpu")
+            self.device = torch.device(
+                "cuda") if param.cuda else torch.device("cpu")
             self.half = True if param.cuda else False
 
             if param.model_weight_file:
                 self.model = YOLO(param.model_weight_file)
             else:
-                self.model = YOLO(f'{param.model_name}.pt')
+                # Set path
+                model_folder = os.path.join(os.path.dirname(
+                    os.path.realpath(__file__)), "weights")
+                model_weights = os.path.join(
+                    str(model_folder), f'{param.model_name}.pt')
+                # Download model if not exist
+                if not os.path.isfile(model_weights):
+                    self.url = f'https://github.com/{self.repo}/releases/download/{self.version}/{param.model_name}.pt'
+                    download(url=self.url, dir=model_folder, unzip=True)
+                self.model = YOLO(model_weights)
             param.update = False
 
         # Run detection
@@ -135,20 +150,20 @@ class InferYoloV8(dataprocess.CObjectDetectionTask):
         boxes = results[0].boxes.xyxy
         confidences = results[0].boxes.conf
         class_idx = results[0].boxes.cls
- 
+
         for i, (box, conf, cls) in enumerate(zip(boxes, confidences, class_idx)):
             box = box.detach().cpu().numpy()
             x1, y1, x2, y2 = box[0], box[1], box[2], box[3]
             widht = x2 - x1
             height = y2 - y1
             self.add_object(
-                    i,
-                    int(cls),
-                    float(conf),
-                    float(x1),
-                    float(y1),
-                    float(widht),
-                    float(height)
+                i,
+                int(cls),
+                float(conf),
+                float(x1),
+                float(y1),
+                float(widht),
+                float(height)
             )
 
         # Step progress bar (Ikomia Studio):
@@ -173,7 +188,7 @@ class InferYoloV8Factory(dataprocess.CTaskFactory):
                                 "with YOLOv8 models"
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Detection"
-        self.info.version = "1.0.0"
+        self.info.version = "1.0.1"
         self.info.icon_path = "icons/icon.png"
         self.info.authors = "Jocher, G., Chaurasia, A., & Qiu, J"
         self.info.article = "YOLO by Ultralytics"
