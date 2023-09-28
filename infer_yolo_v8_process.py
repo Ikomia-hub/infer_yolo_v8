@@ -183,8 +183,6 @@ class InferYoloV8Factory(dataprocess.CTaskFactory):
         # Set process information as string here
         self.info.name = "infer_yolo_v8"
         self.info.short_description = "Inference with YOLOv8 models"
-        self.info.description = "This algorithm proposes inference for object detection " \
-                                "with YOLOv8 models"
         # relative path -> as displayed in Ikomia application process tree
         self.info.path = "Plugins/Python/Detection"
         self.info.version = "1.0.1"
@@ -197,7 +195,8 @@ class InferYoloV8Factory(dataprocess.CTaskFactory):
         # URL of documentation
         self.info.documentation_link = "https://docs.ultralytics.com/"
         # Code source repository
-        self.info.repository = "https://github.com/ultralytics/ultralytics"
+        self.info.repository = "https://github.com/Ikomia-hub/infer_yolo_v8"
+        self.info.original_repository = "https://github.com/ultralytics/ultralytics"
         # Keywords used for search
         self.info.keywords = "YOLO, object, detection, ultralytics, real-time"
 
