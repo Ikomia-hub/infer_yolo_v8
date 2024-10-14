@@ -57,7 +57,6 @@ display(algo.get_image_with_graphics())
 Ikomia Studio offers a friendly UI with the same features as the API.
 
 - If you haven't started using Ikomia Studio yet, download and install it from [this page](https://www.ikomia.ai/studio).
-
 - For additional guidance on getting started with Ikomia Studio, check out [this blog post](https://www.ikomia.ai/blog/how-to-get-started-with-ikomia-studio).
 
 ## :pencil: Set algorithm parameters
@@ -67,7 +66,6 @@ Ikomia Studio offers a friendly UI with the same features as the API.
     - yolov8s
     - yolov8l
     - yolov8x
-
 - **input_size** (int) - default '640': Size of the input image.
 - **conf_thres** (float) default '0.25': Box threshold for the prediction [0,1].
 - **iou_thres** (float) - default '0.7': Intersection over Union, degree of overlap between two boxes [0,1].
